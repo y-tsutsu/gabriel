@@ -2,7 +2,7 @@
   <article class="media">
     <div class="media-content">
       <div class="content">
-        <nuxt-link :to="'/question/${question.id}'">
+        <nuxt-link :to="`/question/${question.id}`">
           <p>
             <strong>{{ question.title }}</strong>
           </p>

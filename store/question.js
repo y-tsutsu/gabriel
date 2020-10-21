@@ -1,33 +1,19 @@
 
 export const state = () => ({
-  questions: [] // すべての質問データを格納する配列
+  questions: [], // 質問データの全件データ
+  question: {} // 1件の質問データ_
 });
 
 export const mutations = {
   setQuestionsAll(state, payload) {
     state.questions = payload;
+  },
+  setQuestion(state, payload) {
+    state.question = payload;
   }
 };
 
 export const actions = {
-  addQuestion({ commit, state, dispatch }, payload) {
-    commit("setBusy", true, { root: true });
-    commit("clearError", null, { root: true });
-    const db = this.$fireApp.firestore();
-    // クエスチョンを登録
-    let questionRef = db.collection("questions");
-    questionRef
-      .add({
-        title: payload.question,
-        userRef: db.collection("users").doc(payload.userId),
-        createdAt: new Date().toISOString()
-      })
-      .then(() => {
-        dispatch("fetchQuestionsAll");
-        commit("setBusy", false, { root: true });
-        commit("setJobDone", true, { root: true });
-      });
-  },
   async fetchQuestionsAll({ commit, state }, payload) {
     const db = this.$fireApp.firestore();
 
@@ -61,6 +47,49 @@ export const actions = {
       });
     }
     commit("setQuestionsAll", storeData);
+  },
+  async fetchQuestion({ commit, state }, questionId) {
+    // データベースを取得
+    const db = this.$fireApp.firestore();
+    // クエスチョン1件にアクセス
+    const querySnapshot = await db
+      .collection("questions")
+      .doc(questionId)
+      .get();
+
+    // リレーションのユーザーデータを取得
+    const userQuerySnapshot = await querySnapshot.data().userRef.get();
+    // ユーザーIDを取得
+    const userID = await querySnapshot.data().userRef.id;
+
+    // 1件の質問データをmutationsにコミット
+    commit("setQuestion", {
+      title: querySnapshot.data().title,
+      id: questionId,
+      createdAt: querySnapshot.data().createdAt,
+      user: {
+        ...userQuerySnapshot.data(),
+        id: userID
+      }
+    });
+  },
+  addQuestion({ commit, state, dispatch }, payload) {
+    commit("setBusy", true, { root: true });
+    commit("clearError", null, { root: true });
+    const db = this.$fireApp.firestore();
+    // クエスチョンを登録
+    let questionRef = db.collection("questions");
+    questionRef
+      .add({
+        title: payload.question,
+        userRef: db.collection("users").doc(payload.userId),
+        createdAt: new Date().toISOString()
+      })
+      .then(() => {
+        dispatch("fetchQuestionsAll");
+        commit("setBusy", false, { root: true });
+        commit("setJobDone", true, { root: true });
+      });
   },
   async updateQuestion({ commit, state, dispatch }, payload) {
     commit("setBusy", true, { root: true });
@@ -109,5 +138,8 @@ export const actions = {
 export const getters = {
   questionsAll(state) {
     return state.questions;
+  },
+  question(state) {
+    return state.question;
   }
 };
