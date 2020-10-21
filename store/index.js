@@ -81,6 +81,10 @@ export const actions = {
         commit("setError", error);
       });
   },
+  logOut({ commit }) {
+    this.$fireApp.auth().signOut();
+    commit("setUser", null);
+  },
 };
 
 export const getters = {
