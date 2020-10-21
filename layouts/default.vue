@@ -40,7 +40,7 @@
     <footer class="footer">
       <div>
         <div class="content has-text-centered">
-          <p>&copy; qaSample</p>
+          <p>&copy; y-tsutsu</p>
         </div>
       </div>
     </footer>

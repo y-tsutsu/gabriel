@@ -36,7 +36,8 @@ export default {
   */
   plugins: [
     "@/plugins/firebase",
-    "@/plugins/vee-validate"
+    "@/plugins/vee-validate",
+    "@/plugins/moment"
   ],
   /*
   ** Auto import components
