@@ -12,9 +12,14 @@
               <div class="control">
                 <textarea
                   class="textarea"
+                  name="questionText"
                   v-model="question"
+                  v-validate="'required'"
                   placeholder="質問を⼊⼒してください"
                 ></textarea>
+                <p v-show="errors.has('questionText')" class="help is-danger">
+                  {{ errors.first("questionText") }}
+                </p>
               </div>
             </div>
             <div class="field">
@@ -60,12 +65,16 @@ export default {
   },
   methods: {
     onQuestion() {
-      let userID = this.$store.getters.user.id;
-      const payload = {
-        question: this.question,
-        userId: userID,
-      };
-      this.$store.dispatch("question/addQuestion", payload);
+      this.$validator.validateAll().then((result) => {
+        if (result) {
+          let userID = this.$store.getters.user.id;
+          const payload = {
+            question: this.question,
+            userId: userID,
+          };
+          this.$store.dispatch("question/addQuestion", payload);
+        }
+      });
     },
     jobsDone() {
       console.log("job done");
