@@ -28,19 +28,50 @@
         </div>
       </article>
     </div>
-    <!-- ここに回答の⼊⼒が⼊ります-->
+    <br />
+    <article class="media">
+      <div v-if="isLogin" class="media-content">
+        <div class="field">
+          <p class="control">
+            <textarea
+              class="textarea"
+              v-model="answer"
+              placeholder="回答を⼊⼒してください！ "
+            ></textarea>
+          </p>
+        </div>
+        <div class="field">
+          <p class="control">
+            <button class="button" @click="onAnsewer">質問に回答</button>
+          </p>
+        </div>
+      </div>
+      <div v-else>アカウントを作成して質問に回答しましょう！</div>
+    </article>
   </section>
 </template>
 
 <script>
 import apiJobMixin from "@/mixins/apiJobMixin";
 export default {
+  data() {
+    return {
+      answer: "",
+    };
+  },
   computed: {
     question() {
       return this.$store.getters["question/question"];
     },
   },
   methods: {
+    onAnsewer() {
+      this.$store.dispatch("answer/addAnswer", {
+        answer: this.answer,
+        userId: this.$store.getters.user.id,
+        questionId: this.question.id,
+      });
+    },
     jobsDone() {
       console.log("job done");
     },
