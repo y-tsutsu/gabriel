@@ -9,30 +9,6 @@ export const mutations = {
 };
 
 export const actions = {
-  async addAnswer({ commit, state, dispatch }, payload) {
-    commit("setBusy", true, { root: true });
-    commit("clearError", null, { root: true });
-    const db = this.$fireApp.firestore();
-    // アンサーを登録
-    let answerRef = db.collection("answers").doc(payload.questionId);
-    let pushData = {};
-    let uniqID = this.$uniqStr();
-    pushData[uniqID] = {
-      id: uniqID,
-      title: payload.answer,
-      userRef: await db.collection("users").doc(payload.userId),
-      createdAt: new Date().toISOString()
-    };
-
-    answerRef
-      .set({ answer: pushData }, { merge: true })
-      .then(() => {
-        dispatch("fetchAnswersAll", payload.questionId);
-        commit("setBusy", false, { root: true });
-        commit("setJobDone", true, { root: true });
-      })
-      .catch(error => console.log(error));
-  },
   async fetchAnswersAll({ commit, state }, questionId) {
     const db = this.$fireApp.firestore();
 
@@ -69,7 +45,79 @@ export const actions = {
       });
     }
     commit("setAnswersAll", storeData);
-  }
+  },
+  async addAnswer({ commit, state, dispatch }, payload) {
+    commit("setBusy", true, { root: true });
+    commit("clearError", null, { root: true });
+    const db = this.$fireApp.firestore();
+    // アンサーを登録
+    let answerRef = db.collection("answers").doc(payload.questionId);
+    let pushData = {};
+    let uniqID = this.$uniqStr();
+    pushData[uniqID] = {
+      id: uniqID,
+      title: payload.answer,
+      userRef: await db.collection("users").doc(payload.userId),
+      createdAt: new Date().toISOString()
+    };
+
+    answerRef
+      .set({ answer: pushData }, { merge: true })
+      .then(() => {
+        dispatch("fetchAnswersAll", payload.questionId);
+        commit("setBusy", false, { root: true });
+        commit("setJobDone", true, { root: true });
+      })
+      .catch(error => console.log(error));
+  },
+  async updateAnswer({ commit, state, dispatch }, payload) {
+    commit("setBusy", true, { root: true });
+    commit("clearError", null, { root: true });
+    const db = this.$fireApp.firestore();
+
+    // アンサーを登録
+    let docRef = await db.collection("answers").doc(payload.questionId);
+    await docRef
+      .get()
+      .then(doc => {
+        const data = doc.data().answer;
+        data[payload.answerId] = {
+          ...data[payload.answerId],
+          title: payload.updateText,
+          updateAt: new Date().toISOString()
+        };
+        docRef.update({ answer: data });
+      })
+      .then(() => {
+        console.log("Document successfully remove!");
+        commit("setBusy", false, { root: true });
+        commit("setJobDone", true, { root: true });
+      });
+
+    dispatch("fetchAnswersAll", payload.questionId);
+  },
+  async removeAnswer({ commit, state, dispatch }, payload) {
+    commit("setBusy", true, { root: true });
+    commit("clearError", null, { root: true });
+    const db = this.$fireApp.firestore();
+
+    // アンサーを登録
+    let docRef = await db.collection("answers").doc(payload.questionId);
+    await docRef
+      .get()
+      .then(doc => {
+        const data = doc.data().answer;
+        delete data[payload.answerId];
+        docRef.update({ answer: data });
+      })
+      .then(() => {
+        console.log("Document successfully remove!");
+        commit("setBusy", false, { root: true });
+        commit("setJobDone", true, { root: true });
+      });
+
+    dispatch("fetchAnswersAll", payload.questionId);
+  },
 };
 
 export const getters = {
